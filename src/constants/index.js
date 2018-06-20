@@ -1,0 +1,5 @@
+// Types
+export const FETCH_KIDS_SUCCESS = 'FETCH_KIDS_SUCCESS';
+export const FETCH_KIDS_LOADING = 'FETCH_KIDS_LOADING';
+export const FETCH_KIDS_ERROR = 'FETCH_KIDS_ERROR';
+
