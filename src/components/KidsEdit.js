@@ -9,7 +9,9 @@ import DayPickerInput from 'react-day-picker/DayPickerInput';
 import 'react-day-picker/lib/style.css';
 import Header from "./Header";
 import * as actions from "../actions";
+import * as utils from "../utils";
 import uploadIcon from "../icons/upload.svg";
+import get from 'lodash.get';
 
 /*
   KidsEdit page 
@@ -23,11 +25,39 @@ class KidsEdit extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      avatar: ''
+    };
+  }
+
+  async onDrop(files) {
+    try {
+      const token = process.env.REACT_APP_API_TOKEN;
+      let formData  = new FormData();
+      formData.append('files',files[0],files[0].name);
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/upload`,
+        {
+          method: "post",
+          headers: {
+            'GIVEAPIToken': token
+          },
+          body: formData
+        },
+      );
+      const json = await response.json();
+      console.log(json);
+      this.setState({
+        avatar: get(json,'files[0].url','')
+      });
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   render() {
     const { root, actions } = this.props;
+    const { avatar } = this.state;
     const { id } = this.props.match.params;
 
     return (
@@ -36,7 +66,6 @@ class KidsEdit extends Component {
 				<article className="pa4 black-80">
           <h2 className="f4">{ id === '0' ? "New" : "Edit" } Kid</h2>
 				    <fieldset className="ba b--transparent ph0 mh0">
-				      <legend className="ph0 mh0 fw6 clip">Sign Up</legend>
 				      <div className="mt3">
 				        <label className="db fw4 lh-copy f6">ID (eth account)</label>
 				        <input className="pa2 input-reset ba bg-transparent w-100 measure" name="id" />
@@ -62,12 +91,15 @@ class KidsEdit extends Component {
 				        <input className="pa2 input-reset ba bg-transparent w-100 measure" name="id_tag_name" />
 				      </div>
 				      <div className="mt3">
-                <Dropzone className="ba b--dashed pa3 pointer w-50" onDrop={(files)=> this.onDrop(files)} accept=".jpg, .jpeg, .png, .tif, .tiff">
+				        <label className="db fw4 lh-copy f6">Avatar</label>
+                <Dropzone className="ba b--dashed pa3 pointer w-30" onDrop={(files)=> this.onDrop(files)} accept=".jpg, .jpeg, .png, .tif, .tiff">
                   <h2 className="f4"> 
-                    <img className="mr3" width="32px" src={uploadIcon} alt="Upload" />
-                    Upload kid photo
+                    {avatar !== ''?
+                    <img className="mr3" width="128px" src={`${utils.basePath(process.env.REACT_APP_API_URL)}${avatar}`} alt="avatar" />
+                    : "Upload Kid photo"}
                   </h2>
-                  Drop here or click to browse
+                    <img className="mr3" width="20px" src={uploadIcon} alt="Upload" />
+                  Drop image here or click to browse
                 </Dropzone>
 				      </div>
 				    </fieldset>
